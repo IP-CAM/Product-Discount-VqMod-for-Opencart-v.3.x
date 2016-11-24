@@ -1,0 +1,177 @@
+<modification>
+
+    <id>Product Discount</id>
+    <version>1.1.0</version>
+    <vqmver>2.1.1</vqmver>
+    <author>PHP0</author>
+
+
+    <file name="admin/view/template/extension/module/advanced_filter/product_list.tpl">
+        <operation>
+            <search position="before" index="1">
+                <![CDATA[<a href="<?php echo $add; ?>" data-toggle="tooltip" title="<?php echo $button_add; ?>" class="btn btn-primary"><i class="fa fa-plus"></i></a>]]></search>
+
+            <add><![CDATA[
+
+
+         <button onclick="showBox();" type="button" class="btn btn-warning"  >خصم</button>
+
+			]]></add>
+
+        </operation>
+
+
+
+
+        <operation>
+            <search position="after" index="1"><![CDATA[<script type="text/javascript"><!--]]></search>
+
+            <add><![CDATA[
+
+
+
+
+ var htmls='<form class="form-horizontal" role="form">';
+ htmls+='<div class="form-group">';
+ htmls+='<label class="col-sm-2 control-label" ';
+ htmls+='>تاريخ البدء</label>';
+
+ htmls+=' <div class="col-sm-10">';
+ htmls+='<div class="input-group date"><input type="text" name="dateStart" id="dateStart" value="" placeholder="تاريخ الانتهاء" data-date-format="YYYY-MM-DD" class="form-control"><span class="input-group-btn">';
+ htmls+=' <button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button> </span></div>';
+ htmls+='</div>';
+ htmls+='</div>';
+ htmls+='<div class="form-group">';
+ htmls+='<label class="col-sm-2 control-label"';
+ htmls+='>تاريخ الانتهاء</label>';
+ htmls+='<div class="col-sm-10">';
+ htmls+='<div class="input-group date"><input type="text" name="dateEnd" id="dateEnd" value="" placeholder="تاريخ البدء" data-date-format="YYYY-MM-DD" class="form-control"><span class="input-group-btn">';
+ htmls+='<button class="btn btn-default" type="button"><i class="fa fa-calendar"></i></button> </span></div>';
+ htmls+='</div>';
+ htmls+='</div>';
+ htmls+='<div class="form-group">';
+ htmls+=' <label class="col-sm-2 control-label"';
+ htmls+='>سعر</label>';
+ htmls+='<div class="col-sm-10">';
+ htmls+='<input name="price" class="form-control"';
+ htmls+='id="price" />';
+ htmls+='</div></div>';
+ htmls+='</form>';
+
+
+
+
+
+
+
+
+
+
+
+function showBox(){
+
+    bootbox.confirm({
+        title: "Destroy planet?",
+        message: htmls,
+        buttons: {
+            cancel: {
+                label: '<i class="fa fa-times"></i> Cancel'
+            },
+            confirm: {
+                label: '<i class="fa fa-check"></i> ارسال'
+            }
+        },
+        callback: function (result) {
+           saveDiscount();
+        }
+    });
+
+
+
+ $('.date').datetimepicker({
+            pickTime: false
+        });
+}
+
+
+function saveDiscount() {
+
+
+    $("[name='selected[]']:checked").each(function () {
+        $.post("index.php?route=catalog/product/setSpecialDiscount&token=<?php echo $token; ?>", {
+            dateStart: $('#dateStart').val(),
+            dateEnd: $('#dateEnd').val(),
+            price: $('#price').val(),
+            id: $(this).val()
+        }) .done(function() {
+            notie.alert(1, 'تم التخفيض', 2.5);
+
+        }).always(function() {
+            notie.alert(1, 'تم التخفيض', 2.5);
+        });
+
+
+
+    });
+
+
+}
+
+
+
+
+			]]></add>
+
+        </operation>
+
+
+        <operation>
+            <search position="before" index="1"><![CDATA[<script type="text/javascript"><!--]]></search>
+
+
+            <add><![CDATA[
+
+                       <link rel="stylesheet" type="text/css" href="./view/javascript/notie/notie.css">
+                       <script  src="./view/javascript/notie/notie.min.js"></script>
+                       <script  src="./view/javascript/bootBox/bootbox.min.js"></script>
+			]]></add>
+
+        </operation>
+
+
+    </file>
+
+
+    <file name="admin/controller/catalog/product.php">
+        <operation>
+            <search position="before" index="1"><![CDATA[public function add() {]]></search>
+
+            <add><![CDATA[
+
+
+
+         public function setSpecialDiscount() {
+
+
+             $id = $this->request->post['id'];
+             $dateStart = $this->request->post['dateStart'];
+             $dateEnd = $this->request->post['dateEnd'];
+             $price = $this->request->post['price'];
+
+            $query = $this->db->query("DELETE FROM " . DB_PREFIX . "product_special WHERE `oc_product_special`.`product_id` = $id");
+            $query = $this->db->query("INSERT INTO " . DB_PREFIX . "product_special (`product_id`,`customer_group_id`,`priority`,`price`,`date_start`,`date_end`) VALUES ('".$id."','1','1','".$price."','".$dateStart."','".$dateEnd."')");
+
+
+         }
+
+
+
+
+
+			]]></add>
+
+        </operation>
+    </file>
+
+
+</modification>

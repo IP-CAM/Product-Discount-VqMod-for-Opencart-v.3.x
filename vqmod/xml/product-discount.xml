@@ -1,7 +1,7 @@
 <modification>
 
     <id>Product Discount</id>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
     <vqmver>2.1.1</vqmver>
     <author>PHP0</author>
 
@@ -13,8 +13,17 @@
 
             <add><![CDATA[
 
-
-         <button onclick="showBox();" type="button" class="btn btn-warning"  >خصم</button>
+         <div class="btn-group">
+          <button type="button" onclick="getDiscount();" class="btn btn-warning">من مخصوم منه</button>
+          <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="caret"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="javascript:sortTable($('.table-hover'),'desc');">فرز</a></li>
+            <li><a href="javascript:showBox();">خصم</a></li>
+          </ul>
+        </div>
 
 			]]></add>
 
@@ -64,14 +73,42 @@
 
 
 
+function progrs() {
+
+  var obj = $("[name='selected[]']");
+        var len = obj.size();
+        var dialog = bootbox.dialog({
+        title: 'جاري جلب البيانات ...... #' +'<span class="text-danger" >'+len+'</span>',
+        message: '<progress id="countProcc" class="progress progress-striped progress-animated" value="0" max="100" role="progressbar" style="width:90%"></progress><span class="text-success" id="countElm">0</span>'
 
 
 
+    });
 
-function showBox(){
+
+    dialog.css({
+      'top': '50%',
+      'margin-top': function () {
+        return -(dialog.height() / 2);
+      }
+    });
+
+
+}
+
+
+function showBox() {
+
+    var count = $("[name='selected[]']:checked").size();
+    if (count == 0) {
+        notie.alert(3, 'لم تقم باختيار اي عنصر', 2.5);
+
+        return;
+    }
+
 
     bootbox.confirm({
-        title: "Destroy planet?",
+        title: "خصم الاجهزة - " + count,
         message: htmls,
         buttons: {
             cancel: {
@@ -82,15 +119,19 @@ function showBox(){
             }
         },
         callback: function (result) {
-           saveDiscount();
+
+            if (result) {
+                saveDiscount();
+            }
+
+
         }
     });
 
 
-
- $('.date').datetimepicker({
-            pickTime: false
-        });
+    $('.date').datetimepicker({
+        pickTime: false
+    });
 }
 
 
@@ -103,13 +144,12 @@ function saveDiscount() {
             dateEnd: $('#dateEnd').val(),
             price: $('#price').val(),
             id: $(this).val()
-        }) .done(function() {
+        }).done(function () {
             notie.alert(1, 'تم التخفيض', 2.5);
 
-        }).always(function() {
+        }).always(function () {
             notie.alert(1, 'تم التخفيض', 2.5);
         });
-
 
 
     });
@@ -117,6 +157,69 @@ function saveDiscount() {
 
 }
 
+
+function sortTable(table, order) {
+    var asc   = order === 'asc',
+        tbody = table.find('tbody');
+
+    tbody.find('[isdscount=true]').sort(function(a, b) {
+        if (asc) {
+            return $('td:first', a).text().localeCompare($('td:first', b).text());
+        } else {
+            return $('td:first', b).text().localeCompare($('td:first', a).text());
+        }
+    }).appendTo(tbody);
+ notie.alert(1, 'تم الفرز', 2.5);
+
+}
+
+
+
+function getDiscount() {
+
+
+    progrs();
+    var obj = $("[name='selected[]']");
+    var len = obj.size();
+    var i = 0;
+    $("#countProcc").attr('max', len);
+
+
+
+    obj.each(function () {
+        var that = $(this);
+        $.ajax({
+            url: 'index.php?route=catalog/product/getSpecialDiscount&token=<?php echo $token; ?>',
+            dataType: 'json',
+            data: {id: that.val()},
+            success: function (data) {
+
+
+                $("#countProcc").attr('value', i++);
+                $('#countElm').html(i+'/'+len);
+                if (len == i) {
+                   bootbox.hideAll();
+                }
+
+                if (data.succ) {
+                    $(that).closest('tr').addClass("success");
+                    $(that).closest('tr').attr("isDscount",true);
+
+                }
+                else{
+                  $(that).closest('tr').attr("isDscount",false);
+                }
+
+
+            }
+
+        });
+
+
+    });
+
+
+}
 
 
 
@@ -158,11 +261,20 @@ function saveDiscount() {
              $dateEnd = $this->request->post['dateEnd'];
              $price = $this->request->post['price'];
 
-            $query = $this->db->query("DELETE FROM " . DB_PREFIX . "product_special WHERE `oc_product_special`.`product_id` = $id");
+          //  $query = $this->db->query("DELETE FROM " . DB_PREFIX . "product_special WHERE `oc_product_special`.`product_id` = $id");
             $query = $this->db->query("INSERT INTO " . DB_PREFIX . "product_special (`product_id`,`customer_group_id`,`priority`,`price`,`date_start`,`date_end`) VALUES ('".$id."','1','1','".$price."','".$dateStart."','".$dateEnd."')");
 
 
          }
+
+
+                    public function getSpecialDiscount() {
+
+                        $id =(int) $this->request->get['id'];
+                        $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_special  WHERE `oc_product_special`.`product_id` = $id and `date_end`>CURDATE(); ");
+                        echo json_encode(array('succ'=>$this->db->countAffected()));
+
+                     }
 
 
 

@@ -1,7 +1,7 @@
 <modification>
 
     <id>Product Discount</id>
-    <version>2.0.0</version>
+    <version>2.2.0</version>
     <vqmver>2.1.1</vqmver>
     <author>PHP0</author>
 
@@ -22,6 +22,7 @@
           <ul class="dropdown-menu">
             <li><a href="javascript:sortTable($('.table-hover'),'desc');">فرز</a></li>
             <li><a href="javascript:showBox();">خصم</a></li>
+            <li><a href="javascript:removeAllSpecialDiscount();">حذف كافة الخصومات السابقة</a></li>
           </ul>
         </div>
 
@@ -146,6 +147,9 @@ function showBox() {
 }
 
 
+
+
+
 function saveDiscount() {
 
     var pircent=$("#percent:checked").is(":checked");
@@ -171,6 +175,38 @@ function saveDiscount() {
 
 
 }
+
+
+
+
+// حذف كافة الخصومات السابقة
+function removeAllSpecialDiscount() {
+
+    var pircent=$("#percent:checked").is(":checked");
+
+
+
+
+    $("[name='selected[]']:checked").each(function () {
+        $.post("index.php?route=catalog/product/removeAllSpecialDiscount&token=<?php echo $token; ?>", {
+            id: $(this).val()
+        }).done(function () {
+            notie.alert(1, 'تم ', 2.5);
+
+        }).always(function () {
+            notie.alert(1, 'تم التخفيض', 2.5);
+        });
+
+
+    });
+
+
+}
+
+
+
+
+
 
 
 function sortTable(table, order) {
@@ -268,12 +304,13 @@ function getDiscount() {
 
 
 
-            public function calDiscont($percentage,$totalWidth){
+            public function calDiscont($percentage,$old_price){
 
 
 
-             $new_val = ($percentage / 100) * $totalWidth;
-            // return round($new_val, 2);
+                //$new_val = ($percentage / 100) * $old_price;
+              $new_val=$old_price * ((100-$percentage) / 100);
+                // return round($new_val, 2);
              return round($new_val, 0, PHP_ROUND_HALF_UP);
 
             }
@@ -296,7 +333,7 @@ function getDiscount() {
 
                 $priceRow=$query->row['price'];
                 $newPrice= $this->calDiscont($price,$priceRow);
-                 print_r(round($newPrice, 2));
+                // print_r(round($newPrice, 2));
 
              }
              else{
@@ -309,6 +346,19 @@ function getDiscount() {
 
 
          }
+
+
+
+
+
+                 public function removeAllSpecialDiscount() {
+                   $id = $this->request->post['id'];
+                   $query = $this->db->query("DELETE FROM " . DB_PREFIX . "product_special WHERE `oc_product_special`.`product_id` = $id");
+                    echo json_encode(array('succ'=>$this->db->countAffected()));
+                 }
+
+
+
 
 
                     public function getSpecialDiscount() {

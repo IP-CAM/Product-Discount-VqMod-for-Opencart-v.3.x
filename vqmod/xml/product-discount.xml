@@ -3,17 +3,17 @@
     <id>Product Discount</id>
     <version>2.2.0</version>
     <vqmver>2.1.1</vqmver>
-    <author>PHP0</author>
+    <author>Basheir</author>
 
 
     <file name="admin/view/template/catalog/product_list.twig">
         <operation>
             <search position="before" index="1">
-                <![CDATA[<div class="pull-right">]]></search>
+                <![CDATA[<h1>{{ heading_title }}</h1>]]></search>
 
 
             <add><![CDATA[
-
+      <div class="pull-right">
          <div class="btn-group">
           <button type="button" onclick="getDiscount();" class="btn btn-warning">من مخصوم منه</button>
           <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -25,6 +25,7 @@
             <li><a href="javascript:showBox();">خصم</a></li>
             <li><a href="javascript:removeAllSpecialDiscount();">حذف كافة الخصومات السابقة</a></li>
           </ul>
+        </div>
         </div>
 
 			]]></add>
@@ -114,9 +115,7 @@ function showBox() {
 
     var count = $("[name='selected[]']:checked").size();
     if (count == 0) {
-        notie.alert(3, 'لم تقم باختيار اي عنصر', 2.5);
-        bootbox.alert('لم تقم باختيار اي عنصر');
-
+       $.notify('لم تقم باختيار اي عنصر');
         return;
     }
 
@@ -162,7 +161,7 @@ function saveDiscount() {
     $("[name='selected[]']:checked").each( function( index, el ) {
 
          $( el ).closest('td').append('<i class="fa fa-circle-o-notch fa-spin" style="font-size:20px"></i>');
-
+           var txt =  $( el ).closest('td').next('td').next('td').text();
         $.post("index.php?route=catalog/product/setSpecialDiscount&percent="+pircent+"&user_token={{user_token}}", {
             dateStart: $('#dateStart').val(),
             dateEnd: $('#dateEnd').val(),
@@ -170,13 +169,15 @@ function saveDiscount() {
             id: $(this).val()
         }).done(function () {
             $( el ).closest('td').addClass('alert alert-success')
-            notie.alert(1, 'تم التخفيض', 2.5);
+            $.notify("تم التخفيض " + txt,"info");
             $( el ).closest('td').find('i').remove();
 
 
         }).always(function () {
         $( el ).closest('td').addClass('alert alert-danger')
-            notie.alert(1, 'تم التخفيض', 2.5);
+
+
+        $.notify("تم التخفيض " + txt,"info");
          $( el ).closest('td').find('i').remove();
 
         });
@@ -202,17 +203,19 @@ function removeAllSpecialDiscount() {
 
 
      $( el ).closest('td').append('<i class="fa fa-circle-o-notch fa-spin"  style="font-size:20px"></i>');
+     var txt =  $( el ).closest('td').next('td').next('td').text();
+
         $.post("index.php?route=catalog/product/removeAllSpecialDiscount&user_token={{user_token}}", {
             id: $(this).val()
         }).done(function () {
           $( el ).closest('td').addClass('alert alert-success')
-            notie.alert(1, 'تم ', 2.5);
+           $.notify("تم " + txt,"error");
             $( el ).closest('td').find('i').remove();
 
         }).always(function () {
          $( el ).closest('td').addClass('alert alert-danger')
-            notie.alert(1, 'تم التخفيض', 2.5);
             $( el ).closest('td').find('i').remove();
+            $.notify("تم ارالة التخفيض " + txt,"error");
         });
 
 
@@ -238,7 +241,7 @@ function sortTable(table, order) {
             return $('td:first', b).text().localeCompare($('td:first', a).text());
         }
     }).appendTo(tbody);
- notie.alert(1, 'تم الفرز', 2.5);
+    $.notify("تم الفرز","success");
 
 }
 
@@ -306,8 +309,8 @@ function getDiscount() {
 
             <add><![CDATA[
 
-
-                       <script  src="./view/javascript/bootBox/bootbox.min.js"></script>
+                       <script  src="./view/javascript/bootbox.min.js"></script>
+                       <script  src="./view/javascript/notify.js"></script>
 			]]></add>
 
         </operation>

@@ -1,4 +1,3 @@
 # productDiscount
 
-
-اضافة خصم للمنتجات
+Add discount for products 
